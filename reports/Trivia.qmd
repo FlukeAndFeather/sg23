@@ -1,0 +1,163 @@
+---
+title: "SG23 Trivia"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: setup
+
+library(readxl)
+library(tidyverse)
+sightings <- read_csv(dir(here::here("data/Sightings/Standardized"), 
+                          full.names = TRUE),
+                id = "File",
+                show_col_types = FALSE) %>%
+  drop_na(Spp) %>% 
+  filter(!Spp %in% c("END", "SFS.", "STS.")) %>% 
+  mutate(Spp = case_when(
+    Spp == "ANPE" ~ "ANPR",
+    Spp == "CAP" ~ "CAPT",
+    Spp == "KEPN" ~ "KIPN",
+    Spp == "SODP" ~ "CODP",
+    TRUE ~ Spp
+  ))
+biomass <- read_csv(here::here("data/BodySize.csv"),
+                    show_col_types = FALSE) %>% 
+  drop_na(Mass_g)
+ikmt <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
+                  sheet = "Stations")
+zoop <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
+                  sheet = "Samples",
+                  na = c("", "NA")) %>% 
+  mutate(count = ifelse(Count == 9999, Inf, Count))
+esuperba <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
+                      sheet = "ESuperbaLengths")
+```
+
+## Ground rules
+
+-   Work in pairs (one trio allowed)
+
+-   Choose funny team names
+
+-   No cheating!
+
+-   Daytime observations limited to July 11-16, only from the port side.
+
+## Daytime observations
+
+Everyone should know our most commonly seen daytime species - but can you fill out the rest of the top five in order? 1 point if you get 3+ species, +1 point if you get all the species in order.
+
+```{r}
+#| label: numerous_pred
+
+sightings %>% 
+  group_by(Spp) %>% 
+  summarize(Count = sum(Count)) %>% 
+  arrange(desc(Count)) %>% 
+  slice(1:5)
+
+```
+
+That's in raw counts, but let's talk biomass. Which species accounts for the most biomass on our daytime surveys? 1 pt.
+
+```{r}
+#| label: biomass_pred
+
+sightings %>% 
+  left_join(biomass, by = "Spp") %>% 
+  drop_na(Mass_g) %>% 
+  group_by(Spp) %>% 
+  summarize(biomass_g = sum(Mass_g)) %>% 
+  arrange(desc(biomass_g)) %>% 
+  slice(1:5)
+
+```
+
+Bonus point: which bird accounts for the most biomass? 1 pt.
+
+```{r}
+#| label: north-south
+sightings %>% 
+  mutate(NS = ifelse(Lat > 54.5, "S", "N")) %>% 
+  group_by(NS) %>% 
+  summarize(n_sp = n_distinct(Spp),
+            n_ind = sum(Count))
+```
+
+Our largest aggregations were near the northern waypoints. If we divide the study area in half north versus south, what was the ratio of individuals seen in the north versus the south? Closest gets 3 pts, 2nd closest 2 pts, 3rd gets 1 pt. (12:1).
+
+## Nighttime observations
+
+```{r}
+
+zoop %>% 
+  filter(Genus == "Thysanoessa") %>% 
+  summarize(mass_g = sum(Mass_g))
+```
+
+We've all been up to our necks in krill the last week. How much total Thysanoessa in g have we measured so far? Closest gets 3 pts, 2nd closest 2 pts, 3rd gets 1 pt.
+
+```{r}
+
+zoop %>% 
+  left_join(select(ikmt, Waypoint, Observers)) %>% 
+  filter(Genus == "Thysanoessa") %>% 
+  group_by(Observers) %>% 
+  summarize(mass_g = mean(Mass_g))
+  
+```
+
+Bonus point: which crew AM or PM had the higher average mass per net tow?
+
+```{r}
+
+zoop %>% 
+  filter(Phylum %in% c("Ctenophora", "Chaetognatha") |
+         Family %in% c("Salpidae", "Tomopteridae")) %>% 
+  mutate(taxon = coalesce(Family, Phylum)) %>% 
+  group_by(taxon) %>% 
+  summarize(n_ind = sum(Count, na.rm = TRUE),
+            total_mass = sum(Mass_g, na.rm = TRUE))
+```
+
+BATTLE OF THE GELATINOUS GOOP. Of our four most gelatinous denizens of the deep (chaetognaths, ctenophores, salps, and tomopterids), which has the greatest cumulative number of individuals and greatest cumulative mass? 1 pt each.
+
+```{r}
+
+zoop %>% 
+  filter(Sample %in% c(
+    "Unk gelatinous orbs",
+    "Unk eggs",
+    "Egg(?)",
+    "Unknown Egg",
+    "unk eggs",
+    "Eggs",
+    "orbies"
+  )) %>%
+  summarize(orbies_count = sum(Count, na.rm = TRUE))
+zoop %>% filter(Species == "superba") %>% summarize(sum(Count))
+```
+
+Why are we trawling these nets? Because we want to find E superba. What are we finding instead? Weird tiny translucent balls. You may know them as unknown eggs, unknown gelatinous orbs, or simply orbies. What is the ratio of orbies counted to E superba? Closest gets 3 pts, 2nd closest 2 pts, 3rd gets 1 pt. (2.06:1).
+
+## Our comrades
+
+Match each ASC team member to a fact about them.
+
+Grew up playing the harp (Jen)
+
+Served in the Coast Guard (Andy)
+
+Owns a farm (Kris)
+
+Knows someone who wants you to know that technically he didn't stab someone he just cut them (Chet)
+
+Chose working for ASC over being a nuclear power plant engineer (Karsten)
+
+Owned a small flock of emus at age 10 (Bird)
+
+Has two webbed toes (Haila)
+
+1 point for each correct pairing

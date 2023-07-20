@@ -1,0 +1,14 @@
+---
+title: "Nighttime Observations"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(sf)
+library(tidyverse)
+sightings <- readRDS(here::here("data", "sightings.rds"))
+```

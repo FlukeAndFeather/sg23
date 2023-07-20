@@ -1,0 +1,110 @@
+---
+title: "Nighttime Observations"
+format: 
+  html:
+    echo: false
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(readxl)
+library(sf)
+library(tidyverse)
+ikmt <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
+                  sheet = "Stations")
+zoop <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
+                  sheet = "Samples",
+                  na = c("", "NA")) %>% 
+  mutate(count = ifelse(Count == 9999, Inf, Count))
+esuperba <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
+                      sheet = "ESuperbaLengths")
+```
+
+## Plankton biomass
+
+Excluding July 16, which revisited transect 15-16 and accounts for 75% of total sightings due to anomalous diving petrel aggregation. Only species with 15+ individuals shown here.
+
+```{r}
+#| label: plankton_biomass
+
+zoop %>% 
+  filter(!is.na(Phylum)) %>% 
+  mutate(
+    group = case_when(
+      Genus == "Thysanoessa" ~ "Thysanoessa",
+      Species == "superba" ~ "E. superba",
+      Species == "triacantha" ~ "E. triacantha",
+      Genus == "Parathemisto" ~ "Parathemisto",
+      Family == "Myctophidae" ~ "Myctophidae",
+      Family == "Hyperiidae" ~ "Other hyperiidae",
+      Class == "Cephalopoda" ~ "Squid",
+      Family == "Salpidae" ~ "Salps",
+      Phylum == "Ctenophora" ~ "Ctenophores",
+      TRUE ~ "Other"
+    ),
+    Waypoint = fct_reorder(factor(Waypoint), Mass_g, sum),
+    group = fct_reorder(group, Mass_g)
+  ) %>% 
+  ggplot(aes(Waypoint, Mass_g, fill = group)) +
+  geom_col() +
+  scale_fill_viridis_d() +
+  labs(y = "Mass (g)") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
+
+```
+
+## Biomass distribution
+
+Total biomass in plankton tows
+
+```{r}
+#| label: biomass_dist_total
+#| out-width: 100%
+
+total_biomass <- zoop %>% 
+  filter(Sample == "Total") %>% 
+  left_join(select(ikmt, Waypoint, Lat_dec, Lon_dec), by = "Waypoint") %>% 
+  st_as_sf(coords = c("Lon_dec", "Lat_dec"), crs = "EPSG:4326")
+
+ggplot(total_biomass) +
+  geom_sf(aes(size = Mass_g, color = Mass_g)) +
+  geom_sf(color = "grey80", shape = 21, size = 0.1) +
+  scale_x_continuous(breaks = seq(-35.8, -34.8, by = 0.2),
+                     limits = c(-35.8, -34.8)) +
+  scale_color_gradientn(colors = c("blue", "purple", "red"),
+                        limits = c(0, NA)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90),
+        legend.position = "bottom")
+
+```
+
+Krill biomass in plankton tows
+
+```{r}
+#| label: biomass_dist_krill
+#| out-width: 100%
+
+krill_biomass <- zoop %>% 
+  filter(Family == "Euphausiidae") %>% 
+  group_by(Waypoint) %>% 
+  summarize(Mass_g = sum(Mass_g)) %>% 
+  left_join(select(ikmt, Waypoint, Lat_dec, Lon_dec), by = "Waypoint") %>% 
+  st_as_sf(coords = c("Lon_dec", "Lat_dec"), crs = "EPSG:4326")
+
+ggplot(krill_biomass) +
+  geom_sf(aes(size = Mass_g, color = Mass_g)) +
+  geom_sf(color = "grey80", shape = 21, size = 0.1) +
+  scale_x_continuous(breaks = seq(-35.8, -34.8, by = 0.2),
+                     limits = c(-35.8, -34.8)) +
+  scale_color_gradientn(colors = c("blue", "purple", "red"),
+                        limits = c(0, NA)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90),
+        legend.position = "bottom")
+
+```
