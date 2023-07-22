@@ -14,6 +14,6 @@ correct_lat <- function(track) {
   coords %>%
     sf::st_linestring() %>%
     sf::st_sfc(crs = "epsg:4326") %>%
-    data.frame(geom = .) %>%
-    sf::st_sf
+    {data.frame(geom = .)} %>%
+    sf::st_sf()
 }

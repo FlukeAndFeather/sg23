@@ -10,4 +10,6 @@ track1920 <- here::here("data", "DLOG3", "PORT", "11JULY23_trk.shp") %>%
   # Instead of 1000s of 10s segments, 1 simplified feature
   simplify_track(dtol = 0.005) %>%
   # Fix DLOG3 latitude error
-  correct_lat()
+  correct_lat() %>%
+  # Project to South Georgia Lambert Conformal
+  st_transform("epsg:3762")
