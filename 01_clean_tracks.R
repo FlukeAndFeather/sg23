@@ -87,3 +87,5 @@ intervals <- map2(
   st_as_sf(coords = c("lon", "lat"), crs = "EPSG:4326")
 
 ggplot(intervals) + geom_sf(aes(color = transect))
+
+saveRDS(intervals, "data/intervals.rds")

@@ -40,6 +40,7 @@ jul11_star <- read_csv("data/Sightings/11Jul23ED_obs.csv",
 
 # July 12 -----------------------------------------------------------------
 # Starboard obs missing
+# Why no port side obs before 9am local time?
 
 # PORT
 jul12_port <- read_csv("data/Sightings/12July_2_obs.csv",

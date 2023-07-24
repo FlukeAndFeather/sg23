@@ -22,7 +22,7 @@ find_intervals <- function(dlog3_path, transect_name) {
 
 assign_intervals <- function(sightings, intervals) {
   transects <- unique(sightings$transect)
-  map_dfr(transects, function(tr) {
+  map(transects, function(tr) {
     tr_intervals <- filter(intervals, transect == tr)
     tr_sightings <- filter(sightings, transect == tr)
     tr_sightings %>%
@@ -32,5 +32,6 @@ assign_intervals <- function(sightings, intervals) {
                                method = "constant",
                                yright = max(tr_intervals$interval))$y) %>%
       left_join(select(tr_intervals, interval, dist_nmi), by = "interval")
-  })
+  }) %>%
+    list_rbind()
 }
