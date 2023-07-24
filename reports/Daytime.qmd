@@ -12,7 +12,9 @@ editor: visual
 
 library(sf)
 library(tidyverse)
-sightings <- readRDS(here::here("data", "sightings.rds"))
+library(tmap)
+sightings <- readRDS(here::here("data", "sightingsbins.rds"))
+intervals <- readRDS(here::here("data", "intervals.rds"))
 waypoints <- read_csv(here::here("data", "Waypoints.csv"))
 waypoints_sf <- st_as_sf(waypoints, 
                          coords = c("Lon_dec", "Lat_dec"),
@@ -27,7 +29,6 @@ Excluding July 16, which revisited transect 15-16 and accounts for 75% of total 
 #| label: species_counts
 
 counts <- sightings %>% 
-  filter(transect != "1516b") %>% 
   group_by(species) %>% 
   summarize(count = sum(count))
 
@@ -43,40 +44,54 @@ filter(counts, count >= 15) %>%
 
 ## Species distributions
 
-Maps of the 6 most numerous taxa: diving petrels (CODP+UNDP), fur seals, giant petrels (NGPT+SGPT+UGPT), cape petrels, South Georgia cormorants, and blue petrels. Also excludes July 16.
+Maps of the 6 most numerous taxa: diving petrels (CODP+UNDP), fur seals, giant petrels (NGPT+SGPT+UGPT), cape petrels, South Georgia cormorants, and blue petrels. Also excludes July 16. Shown in 10 nm bins.
 
 ```{r}
 #| label: species_maps
 #| out-width: 100%
+#| warning: false
 
-top_6 <- sightings %>% 
-  filter(transect != "1516b") %>% 
-  mutate(group = case_when(
-    species %in% c("CODP", "UNDP") ~ "Diving petrel",
-    species == "FUSE" ~ "Fur seal",
-    species %in% c("UGPT", "NGPT", "SGPT") ~ "Giant petrel",
-    species == "CAPT" ~ "Cape petrel",
-    species == "SGCO" ~ "Cormorant",
-    species == "BLPT" ~ "Blue petrel"
-  )) %>% 
-  drop_na(group) %>% 
-  st_as_sf(coords = c("lon", "lat"), crs = "epsg:4326")
+recode_interval <- function(i, sz) floor((i - 1) / sz) + 1
+interval_locs <- intervals %>%
+  mutate(interval = recode_interval(interval, 10)) %>%
+  group_by(transect, interval) %>%
+  summarize(.groups = "drop") %>%
+  st_centroid()
+top6 <- sightings %>%
+  as.data.frame() %>%
+  mutate(interval = recode_interval(interval, 10),
+         group = case_when(
+           species %in% c("CODP", "UNDP") ~ "Diving petrel",
+           species == "FUSE" ~ "Fur seal",
+           species %in% c("UGPT", "NGPT", "SGPT") ~ "Giant petrel",
+           species == "CAPT" ~ "Cape petrel",
+           species == "SGCO" ~ "Cormorant",
+           species == "BLPT" ~ "Blue petrel"
+         )) %>%
+  drop_na(group) %>%
+  group_by(transect, interval, group) %>%
+  summarize(count = sum(count, na.rm = TRUE),
+            .groups = "drop") %>%
+  right_join(interval_locs, by = c("transect", "interval")) %>%
+  st_sf() %>% 
+  drop_na(count)
 
-top_6 %>% 
-  arrange(desc(count)) %>% 
-  ggplot() +
-  geom_sf(aes(size = count), color = "navy") +
-  geom_sf(color = "grey80", shape = 21, size = 0.1) +
-  geom_sf(data = filter(waypoints_sf, Waypoint > 10), 
-          shape = 21,
-          color = "black",
-          fill = "gold") +
-  scale_x_continuous(breaks = seq(-35.6, -35, by = 0.2)) +
-  facet_wrap(~ group, nrow = 1) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90),
-        legend.position = "bottom",
-        panel.background = element_rect(color = "grey80", fill = NA),
-        strip.background = element_rect(fill = "grey80", color = NA))
+sgmap <- terra::rast(here::here("data", 
+                                "South Georgia Navigation Map", 
+                                "SouthGeorgiaNavMap.tif"))
+bbox <- st_bbox(c(xmin = -39.5, ymin = -55.5, xmax = -34.5, ymax = -52.5),
+                crs = "epsg:4326")
+for (g in unique(top6$group)) {
+  p <- tm_shape(sgmap, bbox = bbox) +
+    tm_rgb() +
+    tm_shape(filter(top6, group == g)) +
+    tm_symbols(size = "count",
+               scale = 2,
+               col = "#E41A1C",
+               size.max = max(top6$count)) +
+    tm_facets(by = "group") +
+    tm_layout(g, legend.outside.position = "bottom")
+  print(p)
+}
 
 ```
