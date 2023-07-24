@@ -13,7 +13,7 @@ jul11_port <- read_csv("data/Sightings/11JULY23_2_ED.obs.csv",
             species = Spp,
             count = Count,
             behavior = Behavior,
-            transect = "1920",
+            transect = "1112",
             side = "PORT") %>%
   drop_na(species) %>%
   filter(species != "END")
@@ -27,7 +27,7 @@ jul11_star <- read_csv("data/Sightings/11Jul23ED_obs.csv",
             species = Spp,
             count = Count,
             behavior = Behavior,
-            transect = "1920",
+            transect = "1112",
             side = "STAR") %>%
   drop_na(species) %>%
   # UNP could be UNPT, UNPN, UNPR...
@@ -50,7 +50,7 @@ jul12_port <- read_csv("data/Sightings/12July_2_obs.csv",
             species = Spp,
             count = Count,
             behavior = Behavior,
-            transect = "1718",
+            transect = "1314",
             side = "PORT") %>%
   drop_na(species)
 
@@ -103,7 +103,7 @@ jul14_port <- read_csv("data/Sightings/14 jULY_2_obs.csv",
             species = Spp,
             count = Count,
             behavior = Behavior,
-            transect = "1314",
+            transect = "1718",
             side = "PORT") %>%
   drop_na(species) %>%
   filter(!species %in% c("END", "SFS.", "STS."))
@@ -121,7 +121,7 @@ jul15_port <- read_csv("data/Sightings/15july23_2_nonulls.csv",
             species = Spp,
             count = Count,
             behavior = Behavior,
-            transect = "1112",
+            transect = "1920",
             side = "PORT") %>%
   drop_na(species) %>%
   filter(species != "END") %>%
@@ -136,7 +136,7 @@ jul15_star <- read_csv("data/Sightings/15jul23_obs.csv",
             species = Spp,
             count = Count,
             behavior = Behavior,
-            transect = "1112",
+            transect = "1920",
             side = "STAR") %>%
   drop_na(species) %>%
   filter(species != "END") %>%

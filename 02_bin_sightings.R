@@ -43,3 +43,17 @@ filter(sightings_1920, species == "CODP") %>%
   geom_point(aes(size = count), alpha = 0.5, color = "hotpink") +
   coord_sf(crs = "epsg:4326", xlim = c(-35.0, -36.0)) +
   theme_minimal()
+
+sgmap <- terra::rast("data/South Georgia Navigation Map/SouthGeorgiaNavMap.tif")
+library(tmap)
+codp1920 <- filter(sightings_1920, species == "CODP") %>%
+  mutate(large_interval = floor((interval - 1) / 6)) %>%
+  group_by(large_interval) %>%
+  summarize(count = sum(count), .groups = "drop",
+            lon = mean(lon),
+            lat = mean(lat)) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = "epsg:4326")
+tm_shape(sgmap) +
+  tm_rgb() +
+  tm_shape(codp1920) +
+  tm_symbols(size = "count", col = "hotpink")
