@@ -482,3 +482,7 @@ sightings <- map(all_obs, ~ eval(sym(.x))) %>%
 
 saveRDS(sightings, "data/sightings.rds")
 
+# TODO --------------------------------------------------------------------
+# Missing 2 hours of data at the start of Jul 12 on the port side (RRV investigating)
+# JWSM have additional sightings for Jul 12 morning starboard. See file "JW&SM_MissingDataForStartOfJul12Transect.xlsx"
+
