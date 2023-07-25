@@ -38,9 +38,25 @@ jul11_star <- read_csv("data/Sightings/11Jul23ED_obs.csv",
   ))
 
 # July 12 -----------------------------------------------------------------
-# Why no port side obs before 9am local time?
 
 # PORT
+# First two hours were recorded to separate file, without location or time.
+# Tried to align the "warmup" file to the starboard obs, but couldn't find
+# observations in common.
+# For now, randomizing time
+gap_start <- ymd_hms("2023-07-12 10:56:44", tz = "UTC")
+gap_end <- ymd_hms("2023-07-12 12:02:53", tz = "UTC")
+gap_dur <- as.numeric(gap_end - gap_start, units = "secs")
+set.seed(1928)
+jul12_port_warmup <- read_csv("data/Sightings/12July_warmup.csv") %>%
+  transmute(lon = Longitude,
+            lat = parse_number(Latitude),
+            datetime = gap_start + sort(runif(n(), max = gap_dur)),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "1314",
+            side = "PORT")
 jul12_port <- read_csv("data/Sightings/12July_2_obs.csv",
                        show_col_types = FALSE) %>%
   transmute(lon = Lon,
@@ -78,6 +94,14 @@ jul12_star <- read_csv("data/Sightings/12Jul23_obs.csv",
     "UNGPT" ~ "UGPT",
     .default = species
   ))
+
+jul12_port_warmup$lon <- approx(jul12_star$datetime,
+                                jul12_star$lon,
+                                xout = jul12_port_warmup$datetime)$y
+jul12_port_warmup$lat <- approx(jul12_star$datetime,
+                                jul12_star$lat,
+                                xout = jul12_port_warmup$datetime)$y
+jul12_port <- rbind(jul12_port_warmup, jul12_port)
 
 # July 13 -----------------------------------------------------------------
 
@@ -223,6 +247,7 @@ jul16_star <- read_csv("data/Sightings/16July231_obs.csv",
             transect = "1516b",
             side = "STAR") %>%
   drop_na(species) %>%
+  filter(species != "END") %>%
   mutate(species = ifelse(species == "ARTE", "ANTE", species))
 
 
@@ -305,6 +330,7 @@ jul19_star <- read_csv("data/Sightings/19Jul23_obs.csv",
             transect = "0910",
             side = "STAR") %>%
   drop_na(species) %>%
+  filter(species != "END") %>%
   mutate(species = case_match(
     species,
     "CAPE" ~ "CAPT",
@@ -483,6 +509,8 @@ sightings <- map(all_obs, ~ eval(sym(.x))) %>%
 saveRDS(sightings, "data/sightings.rds")
 
 # TODO --------------------------------------------------------------------
-# Missing 2 hours of data at the start of Jul 12 on the port side (RRV investigating)
+# Missing 2 hours of data at the start of Jul 12 on the port side (RRV investigating).
+  # Found observations, but time missing. Currently randomizing them? Seems
+  # like a bad long-term solution.
 # JWSM have additional sightings for Jul 12 morning starboard. See file "JW&SM_MissingDataForStartOfJul12Transect.xlsx"
 

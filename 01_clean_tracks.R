@@ -1,9 +1,14 @@
 library(sf)
 library(tidyverse)
 
-# Tracks are messy, neither port nor starboard are complete. But we can stitch
-# them together. Don't forget: coords must be swapped NS and EW.
+# Tracks are messy, for the east side transects; neither port nor starboard are
+# complete. But we can stitch them together. Don't forget: coords must be
+# swapped NS and EW.
 
+# West side:
+# all port
+
+# East side:
 # 1112: port
 # 1314: starboard then port
 # 1516: starboard
@@ -11,6 +16,11 @@ library(tidyverse)
 # 1920: starboard
 
 track_files <- list(
+  `0102` = here::here("data", "DLOG3", "PORT", "23July_2_EFFORTONLY.csv"),
+  `0304` = here::here("data", "DLOG3", "PORT", "22July_2_EFFORTONLY.csv"),
+  `0506` = here::here("data", "DLOG3", "PORT", "21July23_2_EFFORTONLY.csv"),
+  `0708` = here::here("data", "DLOG3", "PORT", "20July23_2.csv"),
+  `0910` = here::here("data", "DLOG3", "PORT", "19July_2_EFFORTONLY.csv"),
   `1112` = here::here("data", "DLOG3", "PORT", "11JULY23.csv"),
   `1314` = c(here::here("data", "DLOG3", "STAR", "12jul23.csv"),
              here::here("data", "DLOG3", "PORT", "12July_2.csv")),

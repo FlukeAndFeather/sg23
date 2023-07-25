@@ -3,11 +3,11 @@ library(tidyverse)
 library(tmap)
 source(here::here("R", "tracks.R"))
 
-# Just for east transects (waypoints 11-20)
+valid_transects <- sprintf("%02d%02d", seq(1, 19, 2), seq(2, 20, 2))
 sightings <- readRDS(here::here("data", "sightings.rds")) %>%
-  filter(transect %in% c("1112", "1314", "1516", "1718", "1920"))
+  filter(transect %in% valid_transects)
 intervals <- readRDS(here::here("data", "intervals.rds")) %>%
-  filter(transect %in% c("1112", "1314", "1516", "1718", "1920"))
+  filter(transect %in% valid_transects)
 
 # Bin sightings, retaining empty intervals
 binned_sightings <- sightings %>%
@@ -42,11 +42,18 @@ sgmap <- terra::rast("data/South Georgia Navigation Map/SouthGeorgiaNavMap.tif")
 bbox <- st_bbox(c(xmin = -39.5, ymin = -55.5, xmax = -34.5, ymax = -52.5),
                 crs = "epsg:4326")
 
-png(here::here("figs", "mostcommonsp_east.png"), width = 800, height = 800)
-tm_shape(sgmap, bbox = bbox) +
-  tm_rgb() +
-  tm_shape(most_common) +
-  tm_symbols(size = "count", col = "species",
-             scale = 2,
-             palette = "Set3")
-dev.off()
+if (interactive()) {
+  png(here::here("figs", "mostcommonsp.png"), width = 800, height = 800)
+  tm_shape(sgmap, bbox = bbox) +
+    tm_rgb() +
+    tm_shape(most_common) +
+    tm_symbols(size = "count", col = "species",
+               scale = 2,
+               palette = "Set3",
+               border.col = "black",
+               border.lwd = 1) +
+    tm_layout(legend.bg.color = "white",
+              legend.position = c("left", "bottom"))
+  dev.off()
+}
+
