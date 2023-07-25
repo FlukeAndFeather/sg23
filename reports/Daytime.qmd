@@ -21,9 +21,11 @@ waypoints_sf <- st_as_sf(waypoints,
                          crs = "epsg:4326")
 ```
 
-## **Species counts**
+The following figures are limited to observations collected while on effort for transects. E.g. July 16, which revisited transect 15-16 is excluded.
 
-Excluding July 16, which revisited transect 15-16 and accounts for 75% of total sightings due to anomalous diving petrel aggregation. Only species with 15+ individuals shown here.
+## Species counts
+
+Only species with 100+ individuals shown here.
 
 ```{r}
 #| label: species_counts
@@ -32,7 +34,7 @@ counts <- sightings %>%
   group_by(species) %>% 
   summarize(count = sum(count))
 
-filter(counts, count >= 15) %>% 
+filter(counts, count >= 100) %>% 
   mutate(species = fct_reorder(species, desc(count))) %>% 
   ggplot(aes(species, count)) +
   geom_col() +
@@ -44,7 +46,7 @@ filter(counts, count >= 15) %>%
 
 ## Species distributions
 
-Maps of the 6 most numerous taxa: diving petrels (CODP+UNDP), fur seals, giant petrels (NGPT+SGPT+UGPT), cape petrels, South Georgia cormorants, and blue petrels. Also excludes July 16. Shown in 10 nm bins.
+Maps of the 6 most numerous taxa: diving petrels (CODP+UNDP), fur seals, giant petrels (NGPT+SGPT+UGPT), cape petrels, blue petrels, and Kerguelen petrels. Observations aggregated to 10 nm bins.
 
 ```{r}
 #| label: species_maps
@@ -65,8 +67,8 @@ top6 <- sightings %>%
            species == "FUSE" ~ "Fur seal",
            species %in% c("UGPT", "NGPT", "SGPT") ~ "Giant petrel",
            species == "CAPT" ~ "Cape petrel",
-           species == "SGCO" ~ "Cormorant",
-           species == "BLPT" ~ "Blue petrel"
+           species == "BLPT" ~ "Blue petrel",
+           species == "KEPT" ~ "Kerguelen petrel"
          )) %>%
   drop_na(group) %>%
   group_by(transect, interval, group) %>%
@@ -88,9 +90,14 @@ for (g in unique(top6$group)) {
     tm_symbols(size = "count",
                scale = 2,
                col = "#E41A1C",
+               border.col = "black",
+               border.lwd = 1,
                size.max = max(top6$count)) +
     tm_facets(by = "group") +
-    tm_layout(g, legend.outside.position = "bottom")
+    tm_layout(g, 
+              title.bg.color = "white",
+              legend.position = c("left", "bottom"), 
+              legend.bg.color = "white")
   print(p)
 }
 
