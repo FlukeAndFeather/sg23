@@ -1,7 +1,6 @@
 library(lubridate)
 library(tidyverse)
 
-
 # July 11 -----------------------------------------------------------------
 
 # PORT
@@ -39,7 +38,6 @@ jul11_star <- read_csv("data/Sightings/11Jul23ED_obs.csv",
   ))
 
 # July 12 -----------------------------------------------------------------
-# Starboard obs missing
 # Why no port side obs before 9am local time?
 
 # PORT
@@ -54,6 +52,32 @@ jul12_port <- read_csv("data/Sightings/12July_2_obs.csv",
             transect = "1314",
             side = "PORT") %>%
   drop_na(species)
+
+# STAR
+jul12_star <- read_csv("data/Sightings/12Jul23_obs.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Lon,
+            lat = Lat,
+            datetime = mdy_hms(paste(Date, Time), tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "1314",
+            side = "STAR") %>%
+  drop_na(species) %>%
+  filter(species != "END") %>%
+  mutate(species = case_match(
+    species,
+    "CAPE" ~ "CAPT",
+    "COPD" ~ "CODP",
+    "KEGP" ~ "KEPT",
+    "KERH" ~ "KEPT",
+    "NOGP" ~ "NGPT",
+    "SOGP" ~ "SGPT",
+    "UNGP" ~ "UGPT",
+    "UNGPT" ~ "UGPT",
+    .default = species
+  ))
 
 # July 13 -----------------------------------------------------------------
 
@@ -93,7 +117,6 @@ jul13_star <- read_csv("data/Sightings/13jul23ED.csv",
   ))
 
 # July 14 -----------------------------------------------------------------
-# Starboard obs missing
 
 # PORT
 jul14_port <- read_csv("data/Sightings/14 jULY_2_obs.csv",
@@ -108,6 +131,28 @@ jul14_port <- read_csv("data/Sightings/14 jULY_2_obs.csv",
             side = "PORT") %>%
   drop_na(species) %>%
   filter(!species %in% c("END", "SFS.", "STS."))
+
+# STAR
+jul14_star <- read_csv("data/Sightings/14July23_ED.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Longitude,
+            lat = Latitude,
+            datetime = ISOdatetime(YYYY, MM, DD, hh, mm, ss.s, tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "1718",
+            side = "STAR") %>%
+  drop_na(species) %>%
+  filter(!species %in% c("END", "START")) %>%
+  # There's a UNPI - unknown pinniped? Probably FUSE given count.
+  mutate(species = case_match(
+    species,
+    "CAPE" ~ "CAPT",
+    "SCGO" ~ "SGCO",
+    "UNGP" ~ "UGPT",
+    .default = species
+  ))
 
 # July 15 -----------------------------------------------------------------
 
@@ -180,20 +225,260 @@ jul16_star <- read_csv("data/Sightings/16July231_obs.csv",
   drop_na(species) %>%
   mutate(species = ifelse(species == "ARTE", "ANTE", species))
 
+
+# July 17 -----------------------------------------------------------------
+
+# PORT
+jul17_port <- read_csv("data/Sightings/17jULY23_2_obs.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Lon,
+            lat = Lat,
+            datetime = mdy_hms(paste(Date, Time), tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "1112b", # Filling in oceanography on 1112
+            side = "PORT") %>%
+  drop_na(species) %>%
+  filter(!species %in% c("END", "FLOCK")) %>% # What's FLOCK??
+  mutate(species = case_match(
+    species,
+    "ARTE" ~ "ANTE",
+    "GNPN" ~ "GEPN",
+    "KEPN" ~ "KIPN",
+    "KGEPN" ~ "KIPN",
+    "SGO" ~ "SGCO",
+    .default = species
+  ))
+
+# STAR
+jul17_star <- read_csv("data/Sightings/17Jul23_obs.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Lon,
+            lat = Lat,
+            datetime = mdy_hms(paste(Date, Time), tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "1112b", # Filling in oceanography on 1112
+            side = "STAR") %>%
+  drop_na(species) %>%
+  filter(!species %in% c("END", "START")) %>%
+  mutate(species = case_match(
+    species,
+    "CAPE" ~ "CAPT",
+    "COPD" ~ "CODP",
+    "SCGO" ~ "SGCO",
+    "UNGP" ~ "UGPT",
+    .default = species
+  ))
+
+# July 18 -----------------------------------------------------------------
+
+# No obs; visit to Grytviken
+
+# July 19 -----------------------------------------------------------------
+
+# PORT
+jul19_port <- read_csv("data/Sightings/19July_2_ED.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Longitude,
+            lat = Latitude,
+            datetime = ISOdatetime(YYYY, MM, DD, hh, mm, ss.s, tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "0910",
+            side = "STAR") %>%
+  drop_na(species) %>%
+  filter(species != "END")
+
+# STAR
+jul19_star <- read_csv("data/Sightings/19Jul23_obs.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Lon,
+            lat = Lat,
+            datetime = mdy_hms(paste(Date, Time), tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "0910",
+            side = "STAR") %>%
+  drop_na(species) %>%
+  mutate(species = case_match(
+    species,
+    "CAPE" ~ "CAPT",
+    "KERG" ~ "KEPT",
+    "KERH" ~ "KEPT",
+    "KGPT" ~ "KEPT",
+    "SPGT" ~ "SGPT",
+    "SRWH" ~ "RIWH",
+    "UNGP" ~ "UGPT",
+    .default = species
+  ))
+
+
+# July 20 -----------------------------------------------------------------
+
+# PORT
+jul20_port <- read_csv("data/Sightings/20July23_2_obs.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Lon,
+            lat = Lat,
+            datetime = mdy_hms(paste(Date, Time), tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "0708",
+            side = "PORT") %>%
+  drop_na(species) %>%
+  filter(species != "END") %>%
+  mutate(species = ifelse(species == "KERG", "KEPT", species))
+
+# STAR
+jul20_star <- read_csv("data/Sightings/20jul23_ED.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Longitude,
+            lat = Latitude,
+            datetime = ISOdatetime(YYYY, MM, DD, hh, mm, ss.s, tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "0708",
+            side = "STAR") %>%
+  drop_na(species) %>%
+  filter(species != "END") %>%
+  mutate(species = case_match(
+    species,
+    "CAPE" ~ "CAPT",
+    "KEGP" ~ "KEPT",
+    "KERG" ~ "KEPT",
+    "WALL" ~ "WAAL",
+    .default = species
+  ))
+
+
+# July 21 -----------------------------------------------------------------
+
+# PORT
+jul21_port <- read_csv("data/Sightings/21July23_2_obs.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Lon,
+            lat = Lat,
+            datetime = mdy_hms(paste(Date, Time), tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "0506",
+            side = "PORT") %>%
+  drop_na(species) %>%
+  filter(species != "END") %>%
+  mutate(species = ifelse(species == "KEPA", "KEPT", species))
+
+# STAR
+jul21_star <- read_csv("data/Sightings/21july23_ED.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Longitude,
+            lat = Latitude,
+            datetime = ISOdatetime(YYYY, MM, DD, hh, mm, ss.s, tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "0506",
+            side = "STAR") %>%
+  drop_na(species) %>%
+  filter(species != "END") %>%
+  mutate(species = case_match(
+    species,
+    "CAPE" ~ "CAPT",
+    "KERG" ~ "KEPT",
+    "UNGP" ~ "UGPT",
+    .default = species
+  ))
+
+# July 22 -----------------------------------------------------------------
+
+# PORT
+jul22_port <- read_csv("data/Sightings/22July_2_obs.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Lon,
+            lat = Lat,
+            datetime = mdy_hms(paste(Date, Time), tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "0304",
+            side = "PORT") %>%
+  drop_na(species) %>%
+  filter(species != "END")
+
+# STAR
+jul22_star <- read_csv("data/Sightings/22jul23_ED.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Longitude,
+            lat = Latitude,
+            datetime = ISOdatetime(YYYY, MM, DD, hh, mm, ss.s, tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "0304",
+            side = "STAR") %>%
+  drop_na(species) %>%
+  mutate(species = case_match(
+    species,
+    "CAPE" ~ "CAPT",
+    "COPD" ~ "CODP",
+    "KERG" ~ "KEPT",
+    .default = species
+  ))
+
+# July 23 -----------------------------------------------------------------
+
+# PORT
+jul23_port <- read_csv("data/Sightings/23July_2_obs.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Lon,
+            lat = Lat,
+            datetime = mdy_hms(paste(Date, Time), tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "0102",
+            side = "PORT") %>%
+  drop_na(species) %>%
+  filter(!species %in% c("END", "RABO")) # RABO?? Rainbow??
+
+# STAR
+jul23_star <- read_csv("data/Sightings/23JulACTUAL_ED.csv",
+                       show_col_types = FALSE) %>%
+  transmute(lon = Longitude,
+            lat = Latitude,
+            datetime = ISOdatetime(YYYY, MM, DD, hh, mm, ss.s, tz = "UTC"),
+            species = Spp,
+            count = Count,
+            behavior = Behavior,
+            transect = "0102",
+            side = "STAR") %>%
+  drop_na(species) %>%
+  filter(species != "END") %>%
+  mutate(species = case_match(
+    species,
+    "CAPE" ~ "CAPT",
+    "COPD" ~ "CODP",
+    .default = species
+  ))
+
 # All dates ---------------------------------------------------------------
 
-sightings <- rbind(
-  jul11_port,
-  jul11_star,
-  jul12_port,
-  jul13_port,
-  jul13_star,
-  jul14_port,
-  jul15_port,
-  jul15_star,
-  jul16_port,
-  jul16_star
-) %>%
+# Names of data frames
+dates <- rep(c(11:15, 19:23), each = 2)
+sides <- rep(c("port", "star"), 10)
+all_obs <- str_glue("jul{dates}_{sides}")
+
+# Name -> eval -> rbind
+sightings <- map(all_obs, ~ eval(sym(.x))) %>%
+  list_rbind()%>%
   mutate(lon = -lon, lat = -lat)
+
 saveRDS(sightings, "data/sightings.rds")
 
