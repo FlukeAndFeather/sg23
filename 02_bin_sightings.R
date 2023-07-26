@@ -16,6 +16,8 @@ binned_sightings <- sightings %>%
   summarize(count = sum(count), .groups = "drop") %>%
   right_join(intervals, by = c("transect", "interval")) %>%
   st_sf()
+
+# Save
 saveRDS(binned_sightings, here::here("data", "sightingsbins.rds"))
 
 # Diagnostic map of most common species w/in 10 nmi bins

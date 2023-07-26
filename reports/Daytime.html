@@ -34,13 +34,35 @@ ul.task-list li input[type="checkbox"] {
 <link href="Daytime_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="Daytime_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
+<script src="Daytime_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="Daytime_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
-<body class="fullcontent">
+<body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#species-counts" id="toc-species-counts" class="nav-link active" data-scroll-target="#species-counts">Species counts</a></li>
+  <li><a href="#species-distributions" id="toc-species-distributions" class="nav-link" data-scroll-target="#species-distributions">Species distributions</a>
+  <ul class="collapse">
+  <li><a href="#most-common" id="toc-most-common" class="nav-link" data-scroll-target="#most-common">Most common</a></li>
+  <li><a href="#penguins" id="toc-penguins" class="nav-link" data-scroll-target="#penguins">Penguins</a></li>
+  </ul></li>
+  <li><a href="#communities" id="toc-communities" class="nav-link" data-scroll-target="#communities">Communities</a>
+  <ul class="collapse">
+  <li><a href="#community-map" id="toc-community-map" class="nav-link" data-scroll-target="#community-map">Community map</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
@@ -72,6 +94,8 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="species-distributions" class="level2">
 <h2 class="anchored" data-anchor-id="species-distributions">Species distributions</h2>
+<section id="most-common" class="level3">
+<h3 class="anchored" data-anchor-id="most-common">Most common</h3>
 <p>Maps of the 6 most numerous taxa: diving petrels (CODP+UNDP), fur seals, giant petrels (NGPT+SGPT+UGPT), cape petrels, blue petrels, and Kerguelen petrels. Observations aggregated to 10 nm bins.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -93,6 +117,89 @@ ul.task-list li input[type="checkbox"] {
 <p><img src="Daytime_files/figure-html/species_maps-6.png" class="img-fluid" style="width:100.0%"></p>
 </div>
 </div>
+</section>
+<section id="penguins" class="level3">
+<h3 class="anchored" data-anchor-id="penguins">Penguins</h3>
+<p>Maps of the three penguin species</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Daytime_files/figure-html/penguin_maps-1.png" class="img-fluid" style="width:100.0%"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Daytime_files/figure-html/penguin_maps-2.png" class="img-fluid" style="width:100.0%"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Daytime_files/figure-html/penguin_maps-3.png" class="img-fluid" style="width:100.0%"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="communities" class="level2">
+<h2 class="anchored" data-anchor-id="communities">Communities</h2>
+<p>Do seabirds and marine mammals form spatially distinct communities?</p>
+<p>Begin by aggregating species into 10 nmi intervals and retaining species observed in at least 5% of those intervals.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Daytime_files/figure-html/pred_comm-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Using only these species, normalize counts to ind nmi^-1 (divide by interval length, they’re not exactly 10 nmi) and apply the pseudo-log transformation (<span class="math inline">\(log(x+1)\)</span>) to reduce leverage of highly abundant species. Create a distance matrix using Bray-Curtis dissimilarity and apply hierarchical clustering using Ward’s clustering criterion. The first figure suggests 3 clusters is reasonable based on the shoulder in the gap statistic. The second figure is a dendrogram of the predator communities. Each tip in the tree represents one of the 10 nmi intervals.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Daytime_files/figure-html/pred_clus-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Daytime_files/figure-html/pred_clus-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We use Dufrene-Legendre indicator species analysis to describe each of the three clusters. The indicator value is the product of relative frequency and relative abundance, falling between 0 and 1. Indicator values close to 1 mean a species is extremely widespread and abundant within a cluster; a value close to 0 means a species is rare in that cluster. Species with indicator values &gt;=0.20 shown below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">1</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">2</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CODP (85%)<br>
+CAPT (64%)<br>
+FUSE (63%)<br>
+GPT (59%)<br>
+GEPN (38%)<br>
+SGCO (36%)</td>
+<td style="text-align: left;">ANFU (50%)<br>
+WAAL (49%)<br>
+BLPT (38%)<br>
+GPT (28%)</td>
+<td style="text-align: left;">KEPT (29%)</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<section id="community-map" class="level3">
+<h3 class="anchored" data-anchor-id="community-map">Community map</h3>
+<p>Distribution of the three seabird/marine mammal communities around South Georgia.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>stars object downsampled to 896 by 1116 cells. See tm_shape manual (argument raster.downsample)</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Daytime_files/figure-html/comm_map-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
 </section>
 
 </main>
