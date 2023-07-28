@@ -15,18 +15,24 @@ library(readxl)
 library(sf)
 library(tidyverse)
 library(tmap)
+# Remove haul at waypoint 7x, it was aborted early due to weather
 ikmt <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
-                  sheet = "Stations")
+                  sheet = "Stations") %>% 
+  filter(Waypoint != "7x") %>% 
+  mutate(Waypoint = round(parse_number(Waypoint), 2))
 zoop <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
                   sheet = "Samples",
                   na = c("", "NA")) %>% 
+  filter(Waypoint != "7x") %>% 
   mutate(count = ifelse(Count == 9999, Inf, Count),
-         Mass_g = parse_number(Mass_g))
+         Mass_g = parse_number(Mass_g),
+         Waypoint = round(parse_number(Waypoint), 2))
 # Estimate missing fish mass at waypoint by assuming Mass_g == Vol_mL
 zoop$Mass_g[zoop$SampleID == 435] <- zoop$Volume_ml[zoop$SampleID == 435]
 zoop$Mass_g[zoop$SampleID == 425] <- sum(zoop$Mass_g[zoop$SampleID %in% 426:435])
 esuperba <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
-                      sheet = "ESuperbaLengths")
+                      sheet = "ESuperbaLengths") %>% 
+  mutate(Waypoint = round(Waypoint, 2))
 ```
 
 ```{r}
