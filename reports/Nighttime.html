@@ -37,10 +37,26 @@ ul.task-list li input[type="checkbox"] {
 
 </head>
 
-<body class="fullcontent">
+<body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#plankton-biodiversity" id="toc-plankton-biodiversity" class="nav-link active" data-scroll-target="#plankton-biodiversity">Plankton biodiversity</a>
+  <ul class="collapse">
+  <li><a href="#arthropod-diversity" id="toc-arthropod-diversity" class="nav-link" data-scroll-target="#arthropod-diversity">Arthropod diversity</a></li>
+  <li><a href="#fish-diversity" id="toc-fish-diversity" class="nav-link" data-scroll-target="#fish-diversity">Fish diversity</a></li>
+  </ul></li>
+  <li><a href="#plankton-biomass" id="toc-plankton-biomass" class="nav-link" data-scroll-target="#plankton-biomass">Plankton biomass</a>
+  <ul class="collapse">
+  <li><a href="#spatial-distribution" id="toc-spatial-distribution" class="nav-link" data-scroll-target="#spatial-distribution">Spatial distribution</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
@@ -60,29 +76,76 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<section id="plankton-biomass" class="level2">
-<h2 class="anchored" data-anchor-id="plankton-biomass">Plankton biomass</h2>
-<p>Excluding July 16, which revisited transect 15-16 and accounts for 75% of total sightings due to anomalous diving petrel aggregation. Only species with 15+ individuals shown here.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: There was 1 warning in `mutate()`.
+ℹ In argument: `Mass_g = parse_number(Mass_g)`.
+Caused by warning:
+! 2 parsing failures.
+row col expected actual
+425  -- a number    ???
+435  -- a number    ???</code></pre>
+</div>
+</div>
+<section id="plankton-biodiversity" class="level2">
+<h2 class="anchored" data-anchor-id="plankton-biodiversity">Plankton biodiversity</h2>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="Nighttime_files/figure-html/plankton_biomass-1.png" class="img-fluid" width="672"></p>
+<p><img src="Nighttime_files/figure-html/biodiversity-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<section id="arthropod-diversity" class="level3">
+<h3 class="anchored" data-anchor-id="arthropod-diversity">Arthropod diversity</h3>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Nighttime_files/figure-html/arthro_diversity-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
-<section id="biomass-distribution" class="level2">
-<h2 class="anchored" data-anchor-id="biomass-distribution">Biomass distribution</h2>
-<p>Total biomass in plankton tows</p>
+<section id="fish-diversity" class="level3">
+<h3 class="anchored" data-anchor-id="fish-diversity">Fish diversity</h3>
 <div class="cell">
+<div class="cell-output-display">
+<p><img src="Nighttime_files/figure-html/fish_diversity-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="plankton-biomass" class="level2">
+<h2 class="anchored" data-anchor-id="plankton-biomass">Plankton biomass</h2>
+<p>Zooplankton biomass composition. The cnidarian biomass was mostly composed of two large individuals, an <em>Atolla</em> and a <em>Periphylla periphylla</em>, both found at waypoint 7.5.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Nighttime_files/figure-html/plankton_overall-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Zooplankton biomass composition at each waypoint.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Nighttime_files/figure-html/plankton_by_waypoint-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<section id="spatial-distribution" class="level3">
+<h3 class="anchored" data-anchor-id="spatial-distribution">Spatial distribution</h3>
+<p>Map of total biomass in plankton tows.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>stars object downsampled to 896 by 1116 cells. See tm_shape manual (argument raster.downsample)</code></pre>
+</div>
 <div class="cell-output-display">
 <p><img src="Nighttime_files/figure-html/biomass_dist_total-1.png" class="img-fluid" style="width:100.0%"></p>
 </div>
 </div>
 <p>Krill biomass in plankton tows</p>
 <div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>stars object downsampled to 896 by 1116 cells. See tm_shape manual (argument raster.downsample)</code></pre>
+</div>
 <div class="cell-output-display">
 <p><img src="Nighttime_files/figure-html/biomass_dist_krill-1.png" class="img-fluid" style="width:100.0%"></p>
 </div>
 </div>
+</section>
 </section>
 
 </main>

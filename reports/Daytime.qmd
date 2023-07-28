@@ -312,13 +312,13 @@ communities <- interval_locs %>%
   filter(interval_id %in% names(clust)) %>% 
   mutate(community = map_int(interval_id, ~ clust[names(clust) == .x]))
 tm_shape(sgmap, bbox = bbox) +
-    tm_rgb() +
-    tm_shape(communities) +
-    tm_symbols(col = "community",
-               border.col = "black",
-               border.lwd = 1) +
-    tm_layout(title.bg.color = "white",
-              legend.position = c("left", "bottom"), 
-              legend.bg.color = "white")
+  tm_rgb() +
+  tm_shape(communities) +
+  tm_symbols(col = "community",
+             border.col = "black",
+             border.lwd = 1) +
+  tm_layout(title.bg.color = "white",
+            legend.position = c("left", "bottom"), 
+            legend.bg.color = "white")
 
 ```

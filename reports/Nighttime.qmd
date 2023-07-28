@@ -3,6 +3,7 @@ title: "Nighttime Observations"
 format: 
   html:
     echo: false
+    toc: true
 editor: visual
 ---
 
@@ -13,53 +14,198 @@ editor: visual
 library(readxl)
 library(sf)
 library(tidyverse)
+library(tmap)
 ikmt <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
                   sheet = "Stations")
 zoop <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
                   sheet = "Samples",
                   na = c("", "NA")) %>% 
-  mutate(count = ifelse(Count == 9999, Inf, Count))
+  mutate(count = ifelse(Count == 9999, Inf, Count),
+         Mass_g = parse_number(Mass_g))
+# Estimate missing fish mass at waypoint by assuming Mass_g == Vol_mL
+zoop$Mass_g[zoop$SampleID == 435] <- zoop$Volume_ml[zoop$SampleID == 435]
+zoop$Mass_g[zoop$SampleID == 425] <- sum(zoop$Mass_g[zoop$SampleID %in% 426:435])
 esuperba <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
                       sheet = "ESuperbaLengths")
 ```
 
-## Plankton biomass
-
-Excluding July 16, which revisited transect 15-16 and accounts for 75% of total sightings due to anomalous diving petrel aggregation. Only species with 15+ individuals shown here.
-
 ```{r}
-#| label: plankton_biomass
-
-zoop %>% 
+#| label: group_zoop
+zoop_grouped <- zoop %>% 
   filter(!is.na(Phylum)) %>% 
+  drop_na(Mass_g) %>% 
   mutate(
     group = case_when(
-      Genus == "Thysanoessa" ~ "Thysanoessa",
-      Species == "superba" ~ "E. superba",
-      Species == "triacantha" ~ "E. triacantha",
-      Genus == "Parathemisto" ~ "Parathemisto",
-      Family == "Myctophidae" ~ "Myctophidae",
-      Family == "Hyperiidae" ~ "Other hyperiidae",
-      Class == "Cephalopoda" ~ "Squid",
-      Family == "Salpidae" ~ "Salps",
+      Order == "Euphausiacea" ~ "Krill",
+      Order == "Amphipoda" ~ "Amphipods",
       Phylum == "Ctenophora" ~ "Ctenophores",
+      Phylum == "Cnidaria" ~ "Cnidarians",
       TRUE ~ "Other"
     ),
-    Waypoint = fct_reorder(factor(Waypoint), Mass_g, sum),
-    group = fct_reorder(group, Mass_g)
-  ) %>% 
-  ggplot(aes(Waypoint, Mass_g, fill = group)) +
-  geom_col() +
-  scale_fill_viridis_d() +
-  labs(y = "Mass (g)") +
-  theme_minimal() +
-  theme(legend.title = element_blank())
+    subgroup = case_when(
+      Genus == "Thysanoessa" ~ "Thysanoessa",
+      Species == "superba" ~ "E. superba",
+      group == "Krill" ~ "Other krill",
+      Genus == "Themisto" ~ "Themisto",
+      group == "Amphipods" ~ "Other amphipods",
+      TRUE ~ NA
+    ),
+    group = fct_reorder(group, Mass_g, sum, .desc = TRUE),
+    subgroup = factor(subgroup, levels = c("Thysanoessa",
+                                           "E. superba",
+                                           "Other krill",
+                                           "Themisto",
+                                           "Other amphipods"))
+  )
 
 ```
 
-## Biomass distribution
+```{r}
+#| label: zoop_coal
 
-Total biomass in plankton tows
+format_gen_sp <- function(genus, species) {
+  str_glue("{substr(genus, 1, 1)}. {species}")
+}
+
+```
+
+## Plankton biodiversity
+
+```{r}
+#| label: biodiversity
+
+zoop_phylum <- zoop %>% 
+  drop_na(Phylum) %>% 
+  group_by(Phylum) %>% 
+  summarize(n_ikmt = n_distinct(Waypoint)) %>% 
+  mutate(Phylum = fct_reorder(Phylum, n_ikmt, .desc = TRUE))
+
+ggplot(zoop_phylum, aes(Phylum, n_ikmt)) +
+  geom_col() +
+  labs(y = "Count IKMT") +
+  theme_classic()
+
+```
+
+### Arthropod diversity
+
+```{r}
+#| label: arthro_diversity
+
+arthro_diversity <- zoop %>%
+  drop_na(Phylum) %>% 
+  filter(Phylum == "Arthropoda") %>% 
+  mutate(group = case_when(
+    Genus == "Thysanoessa" ~ "Thysanoessa",
+    Family == "Euphausiidae" ~ "Other krill",
+    Genus == "Themisto" ~ "Themisto",
+    Family == "Hyperiidae" ~ "Other hyperiids",
+    Family == "Phrosinidae" ~ "Phrosinids",
+    Family == "Lysianassidae" ~ "Lysianassids",
+    Order == "Amphipoda" ~ "Other amphipods",
+    Class == "Hexanauplia" ~ "Copepods",
+    TRUE ~ "Other arthropods"
+  )) %>% 
+  group_by(group) %>% 
+  summarize(n_ikmt = n_distinct(Waypoint)) %>% 
+  mutate(group = fct_reorder(group, n_ikmt, .desc = TRUE))
+
+ggplot(arthro_diversity, aes(group, n_ikmt)) +
+  geom_col() +
+  labs(y = "Count IKMT") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.x = element_blank())
+
+```
+
+### Fish diversity
+
+```{r}
+#| label: fish_diversity
+
+is_egg <- function(label) {
+  str_detect(label, "[Oo]rb") | str_detect(label, "[Ee]gg")
+}
+
+fish_diversity <- zoop %>%
+  drop_na(Phylum) %>% 
+  filter(Class == "Actinopterygii") %>% 
+  mutate(group = case_when(
+    Genus == "Electrona" ~ "Electrona",
+    Genus == "Gymnoscopelus" ~ "Gymnoscopelus",
+    Genus == "Protomyctophum" ~ "Protomyctophum",
+    Genus == "Krefftichthys" ~ "Krefftichthys",
+    Family == "Myctophidae" ~ "Other myctophids",
+    Family == "Nototheniidae" ~ "Nototheniidae",
+    is_egg(Sample) ~ "Egg",
+    TRUE ~ "Other fish"
+  )) %>% 
+  group_by(group) %>% 
+  summarize(n_ikmt = n_distinct(Waypoint)) %>% 
+  mutate(group = fct_reorder(group, n_ikmt, .desc = TRUE))
+
+ggplot(fish_diversity, aes(group, n_ikmt)) +
+  geom_col() +
+  labs(y = "Count IKMT") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.x = element_blank())
+
+```
+
+## Plankton biomass
+
+Zooplankton biomass composition. The cnidarian biomass was mostly composed of two large individuals, an *Atolla* and a *Periphylla periphylla*, both found at waypoint 7.5.
+
+```{r}
+#| label: plankton_overall
+
+zoop_grouped %>% 
+  group_by(group) %>% 
+  summarize(Mass_g = sum(Mass_g), .groups = "drop") %>% 
+  ggplot(aes(group, Mass_g)) +
+  geom_col() +
+  labs(y = "Mass (g)") +
+  theme_minimal() +
+  theme(axis.title.x = element_blank())
+
+```
+
+Zooplankton biomass composition at each waypoint.
+
+```{r}
+#| label: plankton_by_waypoint
+
+zoop_grouped %>% 
+  mutate(
+    Waypoint = fct_reorder(factor(Waypoint), Mass_g, sum, .desc = TRUE),
+    group = fct_reorder(group, Mass_g, sum, .desc = TRUE)
+  ) %>% 
+  ggplot(aes(Waypoint, Mass_g, fill = group)) +
+  geom_col() +
+  scale_fill_brewer(palette = "Set2") +
+  labs(y = "Mass (g)") +
+  theme_minimal() +
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(angle = 90))
+
+```
+
+### Spatial distribution
+
+```{r}
+#| label: spatial
+
+sgmap <- terra::rast(here::here("data", 
+                                "South Georgia Navigation Map", 
+                                "SouthGeorgiaNavMap.tif"))
+bbox <- st_bbox(c(xmin = -39.5, ymin = -55.5, xmax = -34.5, ymax = -52.5),
+                crs = "epsg:4326")
+
+```
+
+Map of total biomass in plankton tows.
 
 ```{r}
 #| label: biomass_dist_total
@@ -70,16 +216,15 @@ total_biomass <- zoop %>%
   left_join(select(ikmt, Waypoint, Lat_dec, Lon_dec), by = "Waypoint") %>% 
   st_as_sf(coords = c("Lon_dec", "Lat_dec"), crs = "EPSG:4326")
 
-ggplot(total_biomass) +
-  geom_sf(aes(size = Mass_g, color = Mass_g)) +
-  geom_sf(color = "grey80", shape = 21, size = 0.1) +
-  scale_x_continuous(breaks = seq(-35.8, -34.8, by = 0.2),
-                     limits = c(-35.8, -34.8)) +
-  scale_color_gradientn(colors = c("blue", "purple", "red"),
-                        limits = c(0, NA)) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90),
-        legend.position = "bottom")
+tm_shape(sgmap, bbox = bbox) +
+  tm_rgb() +
+  tm_shape(total_biomass) +
+  tm_symbols(size = "Mass_g",
+             scale = 2,
+             col = "goldenrod",
+             border.col = "black",
+             border.lwd = 1) +
+  tm_layout(legend.position = c("right", "top"))
 
 ```
 
@@ -96,15 +241,14 @@ krill_biomass <- zoop %>%
   left_join(select(ikmt, Waypoint, Lat_dec, Lon_dec), by = "Waypoint") %>% 
   st_as_sf(coords = c("Lon_dec", "Lat_dec"), crs = "EPSG:4326")
 
-ggplot(krill_biomass) +
-  geom_sf(aes(size = Mass_g, color = Mass_g)) +
-  geom_sf(color = "grey80", shape = 21, size = 0.1) +
-  scale_x_continuous(breaks = seq(-35.8, -34.8, by = 0.2),
-                     limits = c(-35.8, -34.8)) +
-  scale_color_gradientn(colors = c("blue", "purple", "red"),
-                        limits = c(0, NA)) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90),
-        legend.position = "bottom")
+tm_shape(sgmap, bbox = bbox) +
+  tm_rgb() +
+  tm_shape(krill_biomass) +
+  tm_symbols(size = "Mass_g",
+             scale = 2,
+             col = "darkred",
+             border.col = "white",
+             border.lwd = 1) +
+  tm_layout(legend.position = c("right", "top"))
 
 ```
