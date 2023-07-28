@@ -54,6 +54,7 @@ ul.task-list li input[type="checkbox"] {
   <ul class="collapse">
   <li><a href="#spatial-distribution" id="toc-spatial-distribution" class="nav-link" data-scroll-target="#spatial-distribution">Spatial distribution</a></li>
   </ul></li>
+  <li><a href="#euphausia-superba" id="toc-euphausia-superba" class="nav-link" data-scroll-target="#euphausia-superba"><em>Euphausia superba</em></a></li>
   </ul>
 </nav>
 </div>
@@ -146,6 +147,35 @@ row col expected actual
 </div>
 </div>
 </section>
+</section>
+<section id="euphausia-superba" class="level2">
+<h2 class="anchored" data-anchor-id="euphausia-superba"><em>Euphausia superba</em></h2>
+<p><em>Euphausia superba</em> was found in 28 of the 43 net hauls. Number of individuals per haul was extremely skewed. 5 individuals or fewer were found in 22 hauls, and 20 or more in just 5 hauls. Overall, the mean and median number of individuals per haul were 13.2 and 2, respectively.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Nighttime_files/figure-html/superba_freq_plot-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Mean <em>E. superba</em> length was 43.1 mm, ranging from &lt;30 mm to 60 mm. What does this say about age classes?</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Nighttime_files/figure-html/superba_lengths-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>As would be expected, the mean length of <em>E. superba</em> in a net haul exhibited greater variance in hauls with fewer individuals. This variance is consistent with a normal distribution. In the figure below, each point represents the mean length of <em>E. superba</em> measured in a net haul and the error bars are the standard deviations. The blue lines indicate the 95% confidence interval of expected mean +/- standard deviation for a normal distribution with the same parameters as the observed distribution. The observed matches the expected well, suggesting the relatively small lengths measured for net hauls between 10 and 25 individuals is due to normal sampling error rather than measurement error.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Nighttime_files/figure-html/esuperba_var_n-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>stars object downsampled to 896 by 1116 cells. See tm_shape manual (argument raster.downsample)</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Nighttime_files/figure-html/superba_map-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
 </section>
 
 </main>

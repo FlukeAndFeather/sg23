@@ -258,3 +258,104 @@ tm_shape(sgmap, bbox = bbox) +
   tm_layout(legend.position = c("right", "top"))
 
 ```
+
+## *Euphausia superba*
+
+```{r}
+#| label: superba_freq
+
+superba_freq <- na.omit(zoop$count[zoop$Species == "superba"])
+
+```
+
+*Euphausia superba* was found in 28 of the 43 net hauls. Number of individuals per haul was extremely skewed. 5 individuals or fewer were found in 22 hauls, and 20 or more in just 5 hauls. Overall, the mean and median number of individuals per haul were 13.2 and 2, respectively.
+
+```{r}
+#| label: superba_freq_plot
+
+filter(zoop, Species == "superba") %>% 
+  mutate(Waypoint = fct_reorder(as.character(Waypoint), 
+                                count, 
+                                .desc = TRUE)) %>%
+  ggplot(aes(Waypoint, count)) +
+  geom_col() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90))
+
+```
+
+Mean *E. superba* length was 43.1 mm, ranging from \<30 mm to 60 mm. What does this say about age classes?
+
+```{r}
+#| label: superba_lengths
+
+esuperba %>% 
+  ggplot(aes(Length_mm)) +
+  geom_histogram(binwidth = 1, fill = "grey80", color = "grey20") +
+  geom_vline(xintercept = mean(esuperba$Length_mm), color = "red") + 
+  theme_classic()
+
+```
+
+As would be expected, the mean length of *E. superba* in a net haul exhibited greater variance in hauls with fewer individuals. This variance is consistent with a normal distribution. In the figure below, each point represents the mean length of *E. superba* measured in a net haul and the error bars are the standard deviations. The blue lines indicate the 95% confidence interval of expected mean +/- standard deviation for a normal distribution with the same parameters as the observed distribution. The observed matches the expected well, suggesting the relatively small lengths measured for net hauls between 10 and 25 individuals is due to normal sampling error rather than measurement error.
+
+```{r}
+#| label: esuperba_var_n
+
+esuperba_var_n <- esuperba %>% 
+  group_by(Waypoint) %>% 
+  summarize(n = n(),
+            mean_length = mean(Length_mm),
+            sd_length = ifelse(n > 2, sd(Length_mm), 0))
+
+sims <- 10000
+mean_length <- mean(esuperba$Length_mm)
+sd_length <- sd(esuperba$Length_mm)
+set.seed(1352)
+expected <- tibble(
+  n = rep(3:30, each = sims),
+  sim_lengths = map(n, \(x) rnorm(x, mean_length, sd_length)),
+  sim_mean = map_dbl(sim_lengths, mean),
+  sim_sd = map_dbl(sim_lengths, sd)
+) %>% 
+  group_by(n) %>% 
+  summarize(upr = quantile(sim_mean + sim_sd, 0.95),
+            lwr = quantile(sim_mean - sim_sd, 0.05))
+
+ggplot(esuperba_var_n, aes(n, mean_length)) +
+  geom_ribbon(aes(ymin = lwr, ymax = upr), 
+              expected, 
+              fill = NA, 
+              color = "blue") +
+  geom_pointrange(aes(ymin = mean_length - sd_length, 
+                      ymax = mean_length + sd_length),
+                  position = position_jitter(width = 0.3)) +
+  labs(x = "Individuals measured in net haul",
+       y = "Mean length (mm)") +
+  theme_classic()
+
+```
+
+The map of *E. superba* biomass shows far more biomass on the west side of South Georgia than the east.
+
+```{r}
+#| label: superba_map
+
+superba_biomass <- zoop %>% 
+  filter(Species == "superba") %>% 
+  group_by(Waypoint) %>% 
+  summarize(Mass_g = sum(Mass_g)) %>% 
+  left_join(select(ikmt, Waypoint, Lat_dec, Lon_dec), by = "Waypoint") %>% 
+  st_as_sf(coords = c("Lon_dec", "Lat_dec"), crs = "EPSG:4326")
+
+tm_shape(sgmap, bbox = bbox) +
+  tm_rgb() +
+  tm_shape(superba_biomass) +
+  tm_symbols(size = "Mass_g",
+             scale = 2,
+             col = "darkorange",
+             border.col = "white",
+             border.lwd = 1) +
+  tm_layout(legend.position = c("right", "top"))
+
+```
