@@ -56,7 +56,8 @@ jul12_port_warmup <- read_csv("data/Sightings/12July_warmup.csv") %>%
             count = Count,
             behavior = Behavior,
             transect = "1314",
-            side = "PORT")
+            side = "PORT") %>%
+  mutate(species = ifelse(species == "CDPT", "CODP", species))
 jul12_port <- read_csv("data/Sightings/12July_2_obs.csv",
                        show_col_types = FALSE) %>%
   transmute(lon = Lon,
@@ -173,6 +174,7 @@ jul14_star <- read_csv("data/Sightings/14July23_ED.csv",
   mutate(species = case_match(
     species,
     "CAPE" ~ "CAPT",
+    "RIWH" ~ "SRWH",
     "SCGO" ~ "SGCO",
     "UNGP" ~ "UGPT",
     .default = species
@@ -333,12 +335,12 @@ jul19_star <- read_csv("data/Sightings/19Jul23_obs.csv",
   filter(species != "END") %>%
   mutate(species = case_match(
     species,
+    "ANPE" ~ "ANPT",
     "CAPE" ~ "CAPT",
     "KERG" ~ "KEPT",
     "KERH" ~ "KEPT",
     "KGPT" ~ "KEPT",
     "SPGT" ~ "SGPT",
-    "SRWH" ~ "RIWH",
     "UNGP" ~ "UGPT",
     .default = species
   ))
