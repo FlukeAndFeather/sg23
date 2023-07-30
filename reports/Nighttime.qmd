@@ -24,7 +24,7 @@ zoop <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
                   sheet = "Samples",
                   na = c("", "NA")) %>% 
   filter(Waypoint != "7x") %>% 
-  mutate(count = ifelse(Count == 9999, Inf, Count),
+  mutate(Count = ifelse(Count > 9998, Inf, Count),
          Mass_g = parse_number(Mass_g),
          Waypoint = round(parse_number(Waypoint), 2))
 # Estimate missing fish mass at waypoint by assuming Mass_g == Vol_mL
@@ -33,6 +33,34 @@ zoop$Mass_g[zoop$SampleID == 425] <- sum(zoop$Mass_g[zoop$SampleID %in% 426:435]
 esuperba <- read_xlsx(here::here("data/PlanktonSamples.xlsx"),
                       sheet = "ESuperbaLengths") %>% 
   mutate(Waypoint = round(Waypoint, 2))
+```
+
+## Overall summary
+
+We conducted `r nrow(ikmt)` IKMT net hauls, for a total of `r scales::comma(sum(zoop$Mass_g[!is.na(zoop$Phylum)], na.rm = TRUE) / 1000, accuracy = 0.1)` kg of plankton.
+
+```{r}
+#| label: summary
+#| cap-location: top
+#| tbl-cap: Frequency and total mass of major plankton groups in net hauls.
+
+zoop %>% 
+  filter(!is.na(Phylum)) %>% 
+  mutate(group = case_when(
+    Order == "Euphausiacea" ~ "Krill",
+    Order == "Myctophiformes" ~ "Myctophids",
+    Genus == "Themisto" ~ "Themisto",
+    Class == "Cephalopoda" ~ "Squid",
+    TRUE ~ "Other plankton"
+  )) %>% 
+  group_by(group) %>% 
+  summarize(n_ikmt = n_distinct(Waypoint),
+            mass_g = sum(Mass_g, na.rm = TRUE)) %>% 
+  mutate(group = factor(group, levels = c("Krill", "Myctophids", "Squid", "Themisto", "Other plankton"))) %>% 
+  arrange(group) %>% 
+  set_names(c("Plankton", "Net hauls present", "Total mass (g)")) %>% 
+  knitr::kable()
+
 ```
 
 ```{r}
@@ -264,7 +292,7 @@ tm_shape(sgmap, bbox = bbox) +
 ```{r}
 #| label: superba_freq
 
-superba_freq <- na.omit(zoop$count[zoop$Species == "superba"])
+superba_freq <- na.omit(zoop$Count[zoop$Species == "superba"])
 
 ```
 
@@ -275,9 +303,9 @@ superba_freq <- na.omit(zoop$count[zoop$Species == "superba"])
 
 filter(zoop, Species == "superba") %>% 
   mutate(Waypoint = fct_reorder(as.character(Waypoint), 
-                                count, 
+                                Count, 
                                 .desc = TRUE)) %>%
-  ggplot(aes(Waypoint, count)) +
+  ggplot(aes(Waypoint, Count)) +
   geom_col() +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90))

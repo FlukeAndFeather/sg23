@@ -1,0 +1,209 @@
+---
+title: "Marine predator communities"
+format: 
+  html:
+    echo: false
+    toc: true
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(cluster)
+library(ggtree)
+library(sf)
+library(tidyverse)
+library(tmap)
+library(vegan)
+sightings <- readRDS(here::here("data", "sightingsbins.rds"))
+intervals <- readRDS(here::here("data", "intervals.rds"))
+waypoints <- read_csv(here::here("data", "Waypoints.csv"))
+waypoints_sf <- st_as_sf(waypoints, 
+                         coords = c("Lon_dec", "Lat_dec"),
+                         crs = "epsg:4326")
+
+```
+
+## Communities
+
+Do seabirds and marine mammals form spatially distinct communities?
+
+Begin by aggregating species into 10 nmi intervals and retaining species observed in at least 5% of those intervals.
+
+```{r}
+#| label: pred_comm
+
+# Lump giant petrels, diving petrels.
+# Remove other unknowns.
+# Aggregate to 10 nmi intervals
+recode_interval <- function(i, sz) floor((i - 1) / sz) + 1
+interval_locs <- intervals %>%
+  mutate(interval = recode_interval(interval, 10)) %>%
+  group_by(transect, interval) %>%
+  summarize(dist_nmi = sum(dist_nmi), .groups = "drop") %>%
+  st_centroid()
+sightings2 <- sightings %>% 
+  as.data.frame() %>% 
+  filter(!str_starts(species, "UN"),
+         species != "PRPT") %>% 
+  mutate(interval = recode_interval(interval, 10),
+         interval_id = paste(transect, interval, sep = "_"),
+         species2 = case_match(
+           species,
+           "NGPT" ~ "GPT",
+           "SGPT" ~ "GPT",
+           "UGPT" ~ "GPT",
+           "UNDP" ~ "CODP",
+           .default = species
+         )) %>% 
+  group_by(transect, interval, interval_id, species2) %>%
+  summarize(count = sum(count, na.rm = TRUE),
+            .groups = "drop") %>% 
+  right_join(interval_locs, by = c("transect", "interval")) %>% 
+  mutate(count_norm = count / dist_nmi) %>% 
+  st_sf()
+# Only retain species seen in at least 5% of 10 nmi intervals (widespread species)
+widespread <- sightings2 %>% 
+  as.data.frame() %>% 
+  drop_na(species2) %>% 
+  group_by(species2) %>%
+  summarize(n_intervals = n(),
+            frac_intervals = n_intervals / nrow(interval_locs)) %>% 
+  filter(frac_intervals >= 0.05)
+sightings2 <- semi_join(sightings2, widespread, by = "species2")
+
+# Plot
+widespread %>% 
+  mutate(species2 = fct_reorder(species2, frac_intervals, .desc = TRUE)) %>% 
+  ggplot(aes(species2, frac_intervals)) +
+  geom_col() +
+  scale_y_continuous("Intervals with species observed", labels = scales::percent) +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.x = element_blank())
+
+```
+
+Using only these species, normalize counts to ind nmi\^-1 (divide by interval length, they're not exactly 10 nmi) and apply the pseudo-log transformation ($log(x+1)$) to reduce leverage of highly abundant species. Create a distance matrix using Bray-Curtis dissimilarity and apply hierarchical clustering using Ward's clustering criterion. The first figure suggests 3 clusters is reasonable based on the shoulder in the gap statistic. The second figure is a dendrogram of the predator communities. Each tip in the tree represents one of the 10 nmi intervals.
+
+```{r}
+#| label: pred_clus
+
+# Create sightings matrix
+sightings_wide <- sightings2 %>%
+  as_tibble() %>%
+  pivot_wider(id_cols = interval_id,
+              names_from = species2,
+              values_from = count_norm,
+              values_fill = 0) %>%
+  mutate(across(-interval_id, ~log(.x + 1)))
+sightings_mtx <- as.matrix(select(sightings_wide, -interval_id))
+row.names(sightings_mtx) <- sightings_wide$interval_id
+
+# Hierarchical clustering
+sightings_dist <- vegdist(sightings_mtx, method = "bray")
+sightings_clust <- hclust(sightings_dist, method = "ward.D2")
+ 
+# Choose 3 clusters
+cluster_fn <- function(x, k) {
+  bray_dist <- function(x) {
+    vegdist(x, method = "bray")
+  }
+  list(cluster = cutree(hclust(bray_dist(x), method = "ward.D2"), k = k))
+}
+set.seed(832)
+sightings_gap <- suppressWarnings(
+  clusGap(sightings_mtx, 
+          FUN = cluster_fn,
+          K.max = 10, 
+          B = 500,
+          verbose = FALSE)
+)
+sightings_gap_df <- as_tibble(sightings_gap$Tab) %>% 
+  mutate(
+    k = seq_along(logW),
+    is_optimum = k == 3
+  )
+ggplot(sightings_gap_df, aes(x = k, y = gap)) +
+  geom_line() +
+  geom_pointrange(aes(ymin = gap - SE.sim, ymax = gap + SE.sim,
+                      color = is_optimum)) +
+  scale_color_manual(values = c(`TRUE` = "blue",
+                                `FALSE` = "black")) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+# Cut predators into four clusters
+clust <- cutree(sightings_clust, 3)
+g <- split(names(clust), clust)
+p <- ggtree(sightings_clust, hang = -1)
+pred_clust_mrca <- sapply(g, function(n) MRCA(p, n))
+
+p %>% 
+  groupClade(pred_clust_mrca, group_name = "Predator cluster") + 
+  aes(color = `Predator cluster`) +
+  layout_dendrogram() +
+  theme_dendrogram()
+
+```
+
+We use Dufrene-Legendre indicator species analysis to describe each of the three clusters. The indicator value is the product of relative frequency and relative abundance, falling between 0 and 1. Indicator values close to 1 mean a species is extremely widespread and abundant within a cluster; a value close to 0 means a species is rare in that cluster. Species with indicator values \>=0.20 shown below.
+
+```{r}
+#| label: indicator_species
+
+species_wide <- sightings2 %>% 
+  as.data.frame() %>% 
+  select(interval_id, species2, count_norm) %>% 
+  pivot_wider(names_from = "species2",
+              values_from = "count_norm",
+              values_fill = 0) %>% 
+  column_to_rownames("interval_id")
+cluster_indval <- labdsv::indval(species_wide, clust)
+indval_mtx <- cluster_indval$indval
+indval_fmt <- apply(indval_mtx, 2, function(x) {
+  ord <- order(x, decreasing = TRUE)
+  result <- ifelse(x >= 0.25, 
+         str_glue("{rownames(indval_mtx)} ({round(x * 100)}%)"),
+         NA) %>% 
+    `[`(ord) %>% 
+    na.omit() %>% 
+    paste(collapse = "<br>")
+  ifelse(result == "", "None", result)
+})
+as_tibble(t(indval_fmt)) %>% 
+  knitr::kable(format = "html", escape = FALSE) %>% 
+  kableExtra::kable_styling()
+
+```
+
+### Community map
+
+Distribution of the three seabird/marine mammal communities around South Georgia.
+
+```{r}
+#| label: comm_map
+
+sgmap <- terra::rast(here::here("data", 
+                                "South Georgia Navigation Map", 
+                                "SouthGeorgiaNavMap.tif"))
+bbox <- st_bbox(c(xmin = -39.5, ymin = -55.5, xmax = -34.5, ymax = -52.5),
+                crs = "epsg:4326")
+communities <- interval_locs %>% 
+  mutate(interval_id = paste(transect, interval, sep = "_")) %>% 
+  filter(interval_id %in% names(clust)) %>% 
+  mutate(community = map_int(interval_id, ~ clust[names(clust) == .x]))
+tm_shape(sgmap, bbox = bbox) +
+  tm_rgb() +
+  tm_shape(communities) +
+  tm_symbols(col = "community",
+             border.col = "black",
+             border.lwd = 1) +
+  tm_layout(title.bg.color = "white",
+            legend.position = c("left", "bottom"), 
+            legend.bg.color = "white")
+
+```
+

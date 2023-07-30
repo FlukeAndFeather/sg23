@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Daytime Observations</title>
+<title>Marine predator communities</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,17 +23,22 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="Daytime_files/libs/clipboard/clipboard.min.js"></script>
-<script src="Daytime_files/libs/quarto-html/quarto.js"></script>
-<script src="Daytime_files/libs/quarto-html/popper.min.js"></script>
-<script src="Daytime_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="Daytime_files/libs/quarto-html/anchor.min.js"></script>
-<link href="Daytime_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="Daytime_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="Daytime_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="Daytime_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="Daytime_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="PredatorCommunities_files/libs/clipboard/clipboard.min.js"></script>
+<script src="PredatorCommunities_files/libs/quarto-html/quarto.js"></script>
+<script src="PredatorCommunities_files/libs/quarto-html/popper.min.js"></script>
+<script src="PredatorCommunities_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="PredatorCommunities_files/libs/quarto-html/anchor.min.js"></script>
+<link href="PredatorCommunities_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="PredatorCommunities_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="PredatorCommunities_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="PredatorCommunities_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="PredatorCommunities_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
+<script src="PredatorCommunities_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="PredatorCommunities_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
@@ -45,12 +50,9 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#overall-summary" id="toc-overall-summary" class="nav-link active" data-scroll-target="#overall-summary">Overall summary</a></li>
-  <li><a href="#species-counts" id="toc-species-counts" class="nav-link" data-scroll-target="#species-counts">Species counts</a></li>
-  <li><a href="#species-distributions" id="toc-species-distributions" class="nav-link" data-scroll-target="#species-distributions">Species distributions</a>
+  <li><a href="#communities" id="toc-communities" class="nav-link active" data-scroll-target="#communities">Communities</a>
   <ul class="collapse">
-  <li><a href="#most-common" id="toc-most-common" class="nav-link" data-scroll-target="#most-common">Most common</a></li>
-  <li><a href="#penguins" id="toc-penguins" class="nav-link" data-scroll-target="#penguins">Penguins</a></li>
+  <li><a href="#community-map" id="toc-community-map" class="nav-link" data-scroll-target="#community-map">Community map</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -59,7 +61,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Daytime Observations</h1>
+<h1 class="title">Marine predator communities</h1>
 </div>
 
 
@@ -74,238 +76,73 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>The following figures are limited to observations collected while on effort for transects. E.g. July 16, which revisited transect 15-16 is excluded.</p>
-<section id="overall-summary" class="level2">
-<h2 class="anchored" data-anchor-id="overall-summary">Overall summary</h2>
-<p>We observed 34 species of seabirds and marine mammals, totaling 11789 individuals.</p>
+<section id="communities" class="level2">
+<h2 class="anchored" data-anchor-id="communities">Communities</h2>
+<p>Do seabirds and marine mammals form spatially distinct communities?</p>
+<p>Begin by aggregating species into 10 nmi intervals and retaining species observed in at least 5% of those intervals.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in st_centroid.sf(.): st_centroid assumes attributes are constant over
+geometries of x</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="PredatorCommunities_files/figure-html/pred_comm-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Using only these species, normalize counts to ind nmi^-1 (divide by interval length, they’re not exactly 10 nmi) and apply the pseudo-log transformation (<span class="math inline">\(log(x+1)\)</span>) to reduce leverage of highly abundant species. Create a distance matrix using Bray-Curtis dissimilarity and apply hierarchical clustering using Ward’s clustering criterion. The first figure suggests 3 clusters is reasonable based on the shoulder in the gap statistic. The second figure is a dendrogram of the predator communities. Each tip in the tree represents one of the 10 nmi intervals.</p>
 <div class="cell">
 <div class="cell-output-display">
-<table class="table table-sm table-striped small">
+<p><img src="PredatorCommunities_files/figure-html/pred_clus-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="PredatorCommunities_files/figure-html/pred_clus-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We use Dufrene-Legendre indicator species analysis to describe each of the three clusters. The indicator value is the product of relative frequency and relative abundance, falling between 0 and 1. Indicator values close to 1 mean a species is extremely widespread and abundant within a cluster; a value close to 0 means a species is rare in that cluster. Species with indicator values &gt;=0.20 shown below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;">Species</th>
-<th style="text-align: right;">Sightings</th>
-<th style="text-align: right;">Total ind</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">1</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">2</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">3</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Common diving petrel</td>
-<td style="text-align: right;">379</td>
-<td style="text-align: right;">5193</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Antarctic fur seal</td>
-<td style="text-align: right;">65</td>
-<td style="text-align: right;">1758</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Cape petrel</td>
-<td style="text-align: right;">247</td>
-<td style="text-align: right;">964</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Unknown giant petrel</td>
-<td style="text-align: right;">276</td>
-<td style="text-align: right;">890</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Blue petrel</td>
-<td style="text-align: right;">259</td>
-<td style="text-align: right;">567</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Unknown diving petrel</td>
-<td style="text-align: right;">67</td>
-<td style="text-align: right;">373</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Southern giant petrel</td>
-<td style="text-align: right;">167</td>
-<td style="text-align: right;">340</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Kerguelen petrel</td>
-<td style="text-align: right;">151</td>
-<td style="text-align: right;">327</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">South Georgia Cormorant</td>
-<td style="text-align: right;">42</td>
-<td style="text-align: right;">318</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Chinstrap penguin</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: right;">148</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Northern giant petrel</td>
-<td style="text-align: right;">94</td>
-<td style="text-align: right;">135</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Wandering albatross</td>
-<td style="text-align: right;">72</td>
-<td style="text-align: right;">100</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Southern fulmar</td>
-<td style="text-align: right;">60</td>
-<td style="text-align: right;">82</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Snow petrel</td>
-<td style="text-align: right;">49</td>
-<td style="text-align: right;">82</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Unknown petrel</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">79</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Antarctic petrel</td>
-<td style="text-align: right;">43</td>
-<td style="text-align: right;">68</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Antarctic tern</td>
-<td style="text-align: right;">33</td>
-<td style="text-align: right;">66</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Gentoo penguin</td>
-<td style="text-align: right;">19</td>
-<td style="text-align: right;">58</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Kelp gull</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">57</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">King penguin</td>
-<td style="text-align: right;">14</td>
-<td style="text-align: right;">39</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Unknown prion</td>
-<td style="text-align: right;">23</td>
-<td style="text-align: right;">24</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Fairy prion</td>
-<td style="text-align: right;">19</td>
-<td style="text-align: right;">22</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Humpback whale</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">22</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Unknown prion or blue petrel</td>
-<td style="text-align: right;">14</td>
-<td style="text-align: right;">16</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Unknown penguin</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">13</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Unknown whale</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">13</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Southern right whale</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">11</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Black-browed albatross</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">10</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Hourglass dolphin</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">8</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Antarctic prion</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">3</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Orca</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">1</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Unknown dolphin</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">1</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Unknown pinniped</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">1</td>
+<td style="text-align: left;">CODP (85%)<br>
+CAPT (64%)<br>
+FUSE (63%)<br>
+GPT (59%)<br>
+GEPN (38%)<br>
+SGCO (36%)</td>
+<td style="text-align: left;">ANFU (50%)<br>
+WAAL (49%)<br>
+BLPT (38%)<br>
+GPT (28%)</td>
+<td style="text-align: left;">KEPT (29%)</td>
 </tr>
 </tbody>
 </table>
+
+
 </div>
 </div>
-</section>
-<section id="species-counts" class="level2">
-<h2 class="anchored" data-anchor-id="species-counts">Species counts</h2>
-<p>Only species with 100+ individuals shown here.</p>
+<section id="community-map" class="level3">
+<h3 class="anchored" data-anchor-id="community-map">Community map</h3>
+<p>Distribution of the three seabird/marine mammal communities around South Georgia.</p>
 <div class="cell">
-<div class="cell-output-display">
-<p><img src="Daytime_files/figure-html/species_counts-1.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-</section>
-<section id="species-distributions" class="level2">
-<h2 class="anchored" data-anchor-id="species-distributions">Species distributions</h2>
-<section id="most-common" class="level3">
-<h3 class="anchored" data-anchor-id="most-common">Most common</h3>
-<p>Maps of the 6 most numerous taxa: diving petrels (CODP+UNDP), fur seals, giant petrels (NGPT+SGPT+UGPT), cape petrels, blue petrels, and Kerguelen petrels. Observations aggregated to 10 nm bins.</p>
-<div class="cell">
-<div class="cell-output-display">
-<p><img src="Daytime_files/figure-html/species_maps-1.png" class="img-fluid" style="width:100.0%"></p>
+<div class="cell-output cell-output-stderr">
+<pre><code>stars object downsampled to 896 by 1116 cells. See tm_shape manual (argument raster.downsample)</code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="Daytime_files/figure-html/species_maps-2.png" class="img-fluid" style="width:100.0%"></p>
-</div>
-<div class="cell-output-display">
-<p><img src="Daytime_files/figure-html/species_maps-3.png" class="img-fluid" style="width:100.0%"></p>
-</div>
-<div class="cell-output-display">
-<p><img src="Daytime_files/figure-html/species_maps-4.png" class="img-fluid" style="width:100.0%"></p>
-</div>
-<div class="cell-output-display">
-<p><img src="Daytime_files/figure-html/species_maps-5.png" class="img-fluid" style="width:100.0%"></p>
-</div>
-<div class="cell-output-display">
-<p><img src="Daytime_files/figure-html/species_maps-6.png" class="img-fluid" style="width:100.0%"></p>
-</div>
-</div>
-</section>
-<section id="penguins" class="level3">
-<h3 class="anchored" data-anchor-id="penguins">Penguins</h3>
-<p>Maps of the three penguin species</p>
-<div class="cell">
-<div class="cell-output-display">
-<p><img src="Daytime_files/figure-html/penguin_maps-1.png" class="img-fluid" style="width:100.0%"></p>
-</div>
-<div class="cell-output-display">
-<p><img src="Daytime_files/figure-html/penguin_maps-2.png" class="img-fluid" style="width:100.0%"></p>
-</div>
-<div class="cell-output-display">
-<p><img src="Daytime_files/figure-html/penguin_maps-3.png" class="img-fluid" style="width:100.0%"></p>
+<p><img src="PredatorCommunities_files/figure-html/comm_map-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
