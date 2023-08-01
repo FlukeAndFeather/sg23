@@ -1,0 +1,20 @@
+{
+  "hash": "5aa312383655c06131587198ab22c729",
+  "result": {
+    "markdown": "---\ntitle: \"Marine predator communities\"\nformat: \n  html:\n    echo: false\n    toc: true\neditor: visual\n---\n\n::: {.cell}\n\n:::\n\n\n## Communities\n\nDo seabirds and marine mammals form spatially distinct communities?\n\nBegin by aggregating species into 10 nmi intervals and retaining species observed in at least 5% of those intervals.\n\n\n::: {.cell}\n::: {.cell-output .cell-output-stderr}\n```\nWarning in st_centroid.sf(.): st_centroid assumes attributes are constant over\ngeometries of x\n```\n:::\n\n::: {.cell-output-display}\n![](PredatorCommunities_files/figure-html/pred_comm-1.png){width=672}\n:::\n:::\n\n\nUsing only these species, normalize counts to ind nmi\\^-1 (divide by interval length, they're not exactly 10 nmi) and apply the pseudo-log transformation ($log(x+1)$) to reduce leverage of highly abundant species. Create a distance matrix using Bray-Curtis dissimilarity and apply hierarchical clustering using Ward's clustering criterion. The first figure suggests 3 clusters is reasonable based on the shoulder in the gap statistic. The second figure is a dendrogram of the predator communities. Each tip in the tree represents one of the 10 nmi intervals.\n\n\n::: {.cell}\n::: {.cell-output-display}\n![](PredatorCommunities_files/figure-html/pred_clus-1.png){width=672}\n:::\n\n::: {.cell-output-display}\n![](PredatorCommunities_files/figure-html/pred_clus-2.png){width=672}\n:::\n:::\n\n\nWe use Dufrene-Legendre indicator species analysis to describe each of the three clusters. The indicator value is the product of relative frequency and relative abundance, falling between 0 and 1. Indicator values close to 1 mean a species is extremely widespread and abundant within a cluster; a value close to 0 means a species is rare in that cluster. Species with indicator values \\>=0.20 shown below.\n\n\n::: {.cell}\n::: {.cell-output-display}\n`````{=html}\n<table class=\"table\" style=\"margin-left: auto; margin-right: auto;\">\n <thead>\n  <tr>\n   <th style=\"text-align:left;\"> 1 </th>\n   <th style=\"text-align:left;\"> 2 </th>\n   <th style=\"text-align:left;\"> 3 </th>\n  </tr>\n </thead>\n<tbody>\n  <tr>\n   <td style=\"text-align:left;\"> CODP (85%)<br>CAPT (64%)<br>FUSE (63%)<br>GPT (59%)<br>GEPN (38%)<br>SGCO (36%) </td>\n   <td style=\"text-align:left;\"> ANFU (50%)<br>WAAL (49%)<br>BLPT (38%)<br>GPT (28%) </td>\n   <td style=\"text-align:left;\"> KEPT (29%) </td>\n  </tr>\n</tbody>\n</table>\n\n`````\n:::\n:::\n\n\n### Community map\n\nDistribution of the three seabird/marine mammal communities around South Georgia.\n\n\n::: {.cell}\n::: {.cell-output .cell-output-stderr}\n```\nstars object downsampled to 896 by 1116 cells. See tm_shape manual (argument raster.downsample)\n```\n:::\n\n::: {.cell-output-display}\n![](PredatorCommunities_files/figure-html/comm_map-1.png){width=672}\n:::\n:::\n",
+    "supporting": [
+      "PredatorCommunities_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {
+      "include-in-header": [
+        "<script src=\"PredatorCommunities_files/libs/kePrint-0.0.1/kePrint.js\"></script>\n<link href=\"PredatorCommunities_files/libs/lightable-0.0.1/lightable.css\" rel=\"stylesheet\" />\n"
+      ]
+    },
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

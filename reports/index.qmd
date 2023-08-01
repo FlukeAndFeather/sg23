@@ -1,0 +1,15 @@
+---
+title: "sg23"
+format: html
+editor: visual
+---
+
+## sg23
+
+Results of the South Georgia winter 2023 surveys.
+
+-   [Daytime surveys](Daytime.html) (seabirds and marine mammals)
+
+-   [Nighttime surveys](Nighttime.html) (plankton tows)
+
+-   [Predator communities](PredatorCommunities.html) (preliminary community analysis)
