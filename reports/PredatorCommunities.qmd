@@ -206,4 +206,3 @@ tm_shape(sgmap, bbox = bbox) +
             legend.bg.color = "white")
 
 ```
-
